@@ -1,0 +1,77 @@
+======================================================================
+  CROSS-DATASET GENERALIZATION — FULL INTERPRETATION REPORT
+======================================================================
+
+  Experiment scope:
+    Reference models : 1 → ['CIC17']
+    Target datasets  : 11 → ['CIC17', 'CIC18_FRIDAY-1', 'CIC18_FRIDAY-2', 'CIC18_FRIDAY-3', 'CIC18_THURSDAY-1', 'CIC18_THURSDAY-2', 'CIC18_THURSDAY-3', 'CIC18_TUESDAY', 'CIC18_WEDNESDAY-1', 'CIC18_WEDNESDAY-2', 'CIC18_WEDNESDAY-3']
+    Total experiments: 11
+    Within-dataset   : 1
+    Cross-dataset    : 10
+
+──────────────────────────────────────────────────────────────────────
+  FINDING 1: WITHIN-DATASET PERFORMANCE
+──────────────────────────────────────────────────────────────────────
+  Average within-dataset: F1=0.9963, MCC=98.54%
+    CIC17                F1=0.9963  MCC=98.54%
+
+  Interpretation: Near-perfect within-dataset performance indicates
+  that the binary classification task is well-separated in each dataset's
+  own feature space. However, this does NOT guarantee generalization.
+
+──────────────────────────────────────────────────────────────────────
+  FINDING 2: CROSS-DATASET GENERALIZATION
+──────────────────────────────────────────────────────────────────────
+  Average cross-dataset: F1=0.7864, MCC=0.00%
+  Generalization gap: F1=+0.2099, MCC=+98.54%
+
+  Interpretation: SEVERE generalization failure.
+  The 99-point MCC drop indicates that models learn
+  dataset-specific artifacts rather than universal intrusion patterns.
+  This is consistent with Cantone et al. (2024) who reported a
+  65-point gap (94.63% within vs 29.35% cross).
+
+──────────────────────────────────────────────────────────────────────
+  FINDING 3: BEST & WORST CROSS-DATASET PAIRS
+──────────────────────────────────────────────────────────────────────
+  Best  : CIC17 → CIC18_FRIDAY-1  MCC=0.00%
+  Worst : CIC17 → CIC18_FRIDAY-1  MCC=0.00%
+
+  The worst pair performs at near-random levels,
+  indicating fundamental distributional mismatch.
+
+──────────────────────────────────────────────────────────────────────
+  FINDING 4: BEST REFERENCE MODEL FOR GENERALIZATION
+──────────────────────────────────────────────────────────────────────
+  Smallest gap : CIC17  (gap=98.54%)
+  Largest gap  : CIC17  (gap=98.54%)
+
+  The model trained on CIC17 generalizes best,
+  possibly due to greater data diversity or more representative
+  attack patterns in the training set.
+
+──────────────────────────────────────────────────────────────────────
+  FINDING 5: FEATURE IMPORTANCE STABILITY (SHAP)
+──────────────────────────────────────────────────────────────────────
+  Top 5 globally stable features:
+    1. Bwd Packet Length Min               avg_rank=1.8  std=0.9
+    2. Flow Duration                       avg_rank=3.3  std=2.6
+    3. Fwd URG Flags                       avg_rank=4.2  std=3.7
+    4. Bwd Packet Length Max               avg_rank=4.5  std=1.7
+    5. Average Packet Size                 avg_rank=4.9  std=2.3
+
+  Interpretation: Top features are HIGHLY STABLE across datasets.
+  This suggests the model captures genuinely discriminative traffic
+  characteristics rather than dataset-specific artifacts.
+
+──────────────────────────────────────────────────────────────────────
+  METHODOLOGICAL NOTES
+──────────────────────────────────────────────────────────────────────
+  • All models trained with leakage-free pipeline
+    (split → feature select → scale → SMOTE, train partition only)
+  • Cross-dataset: reference model's scaler applied to target data
+  • Missing features in target filled with 0 (logged per experiment)
+  • MCC used as primary metric (robust to class imbalance)
+  • SHAP stability measured via rank std across experiments
+
+======================================================================
